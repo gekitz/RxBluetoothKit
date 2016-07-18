@@ -44,7 +44,7 @@ class RxCBCentralManager: RxCentralManagerType {
 	}
 
 	@objc private class InternalDelegate: NSObject, CBCentralManagerDelegate {
-		let didUpdateStateSubject = PublishSubject<CBCentralManagerState>()
+		let didUpdateStateSubject = PublishSubject<CBPeripheralManagerState>()
 		let willRestoreStateSubject = PublishSubject<[String: AnyObject]>()
 		let didDiscoverPeripheralSubject = PublishSubject<(RxPeripheralType, [String: AnyObject], NSNumber)>()
 		let didConnectPerihperalSubject = PublishSubject<RxPeripheralType>()
@@ -52,7 +52,7 @@ class RxCBCentralManager: RxCentralManagerType {
 		let didDisconnectPeripheral = PublishSubject<(RxPeripheralType, NSError?)>()
 
 		@objc func centralManagerDidUpdateState(_ central: CBCentralManager) {
-			didUpdateStateSubject.onNext(central.state)
+			didUpdateStateSubject.onNext(central.state as! CBPeripheralManagerState)
 		}
 
 		@objc func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: AnyObject]) {
@@ -84,7 +84,7 @@ class RxCBCentralManager: RxCentralManagerType {
 	}
 
 	/// Observable which infroms when central manager did change its state
-	var rx_didUpdateState: Observable<CBCentralManagerState> {
+	var rx_didUpdateState: Observable<CBPeripheralManagerState> {
 		return internalDelegate.didUpdateStateSubject
 	}
 	/// Observable which infroms when central manager is about to restore its state
@@ -109,20 +109,20 @@ class RxCBCentralManager: RxCentralManagerType {
 	}
 
 	/// Current central manager state
-	var state: CBCentralManagerState {
-		return centralManager.state
+	var state: CBPeripheralManagerState {
+		return centralManager.state as! CBPeripheralManagerState
 	}
 
 	/// Current continuous state of Central Manager
-	var rx_state: Observable<CBCentralManagerState> {
+	var rx_state: Observable<CBPeripheralManagerState> {
 		return centralManager
 			.rx_observeWeakly(CBCentralManagerState.self, "state")
 			.flatMap {
-                state -> Observable<CBCentralManagerState> in
+                state -> Observable<CBPeripheralManagerState> in
 				guard let state = state else {
-					return Observable.error(BluetoothError.BluetoothInUnknownState)
+					return Observable.error(BluetoothError.bluetoothInUnknownState)
 				}
-				return Observable.just(state)
+				return Observable.just(state as! CBPeripheralManagerState)
             }
             .replay(1)
 	}
@@ -173,7 +173,7 @@ class RxCBCentralManager: RxCentralManagerType {
 	 - returns: Observable wich emits connected peripherals.
 	 */
 	func retrieveConnectedPeripheralsWithServices(_ serviceUUIDs: [CBUUID]) -> Observable<[RxPeripheralType]> {
-		return Observable.just(centralManager.retrieveConnectedPeripheralsWithServices(serviceUUIDs).map {
+		return Observable.just(centralManager.retrieveConnectedPeripherals(withServices: serviceUUIDs).map {
 			RxCBPeripheral(peripheral: $0)
 		})
 	}
@@ -184,8 +184,8 @@ class RxCBCentralManager: RxCentralManagerType {
 	 - parameter identifiers: List of identifiers of peripherals for which we are looking for.
 	 - returns: Observable which emits peripherals with specified identifiers.
 	 */
-	func retrievePeripheralsWithIdentifiers(_ identifiers: [NSUUID]) -> Observable<[RxPeripheralType]> {
-		return Observable.just(centralManager.retrievePeripheralsWithIdentifiers(identifiers).map {
+	func retrievePeripheralsWithIdentifiers(_ identifiers: [UUID]) -> Observable<[RxPeripheralType]> {
+		return Observable.just(centralManager.retrievePeripherals(withIdentifiers: identifiers).map {
 			RxCBPeripheral(peripheral: $0)
 		})
 	}

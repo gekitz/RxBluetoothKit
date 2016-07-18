@@ -123,7 +123,7 @@ extension Peripheral {
      Immediately after that `.Complete` is called. Result of this call is not checked, so as a user you are not sure
      if everything completed successfully. Errors are not emitted
      */
-    public func writeValue(_ data: NSData, forCharacteristicWithIdentifier identifier: CharacteristicIdentifier,
+    public func writeValue(_ data: Data, forCharacteristicWithIdentifier identifier: CharacteristicIdentifier,
                     type: CBCharacteristicWriteType) -> Observable<Characteristic> {
         return characteristicWithIdentifier(identifier)
             .flatMap {
@@ -227,7 +227,7 @@ extension Peripheral {
      - Returns: Observable that emits `Next` with `Descriptor` instance, once value is written successfully.
      Immediately after that `.Complete` is emitted.
      */
-    public func writeValue(_ data: NSData, forDescriptorWithIdentifier identifier: DescriptorIdentifier)
+    public func writeValue(_ data: Data, forDescriptorWithIdentifier identifier: DescriptorIdentifier)
         -> Observable<Descriptor> {
         return descriptorWithIdentifier(identifier)
             .flatMap {

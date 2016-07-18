@@ -113,7 +113,7 @@ public class Characteristic {
      Immediately after that `.Complete` is called. Result of this call is not checked, so as a user you are not sure
      if everything completed successfully. Errors are not emitted
      */
-    public func writeValue(_ data: NSData, type: CBCharacteristicWriteType) -> Observable<Characteristic> {
+    public func writeValue(_ data: Data, type: CBCharacteristicWriteType) -> Observable<Characteristic> {
         return service.peripheral.writeValue(data, forCharacteristic: self, type: type)
     }
 

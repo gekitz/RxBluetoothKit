@@ -141,7 +141,7 @@ public class BluetoothManager {
 						// filtered properly
 						return elem.observable.filter { scannedPeripheral in
 							if let services = scannedPeripheral.advertisementData.serviceUUIDs {
-								return Set(services).isSupersetOf(serviceUUIDs!)
+                                return Set(services).isSuperset(of: Set(serviceUUIDs!))
 							}
 							return false
 						}
@@ -170,8 +170,8 @@ public class BluetoothManager {
 							self.centralManager.stopScan()
 							disposable.dispose()
 							do { self.lock.lock(); defer { self.lock.unlock() }
-								if let index = self.scanQueue.indexOf({ $0 == scanOperationBox.value! }) {
-									self.scanQueue.removeAtIndex(index)
+                                if let index = self.scanQueue.index(where:{ $0 == scanOperationBox.value! }) {
+                                    self.scanQueue.remove(at: index)
 								}
 							}
 						}
@@ -187,7 +187,7 @@ public class BluetoothManager {
 					return operation
 				}()
 				// Allow scanning as long as bluetooth is powered on
-				return self.ensureState(.PoweredOn, observable: observable)
+				return self.ensureState(.poweredOn, observable: observable)
 			}
 	}
 
@@ -199,7 +199,7 @@ public class BluetoothManager {
 	 - returns: Observable that emits `Next` immediately after subscribtion with current state of Bluetooth. Later,
      whenever state changes events are emitted. Observable is infinite : doesn't generate `Complete`.
 	 */
-	public var rx_state: Observable<CBCentralManagerState> {
+	public var rx_state: Observable<CBPeripheralManagerState> {
 		return self.centralManager.rx_didUpdateState.startWith(self.centralManager.state)
 	}
 
@@ -208,7 +208,7 @@ public class BluetoothManager {
 
 	 - returns: Current state of `BluetoothManager` as `CBCentralManagerState`.
 	 */
-	public var state: CBCentralManagerState {
+	public var state: CBPeripheralManagerState {
 		return centralManager.state
 	}
 
@@ -218,7 +218,7 @@ public class BluetoothManager {
 	 - returns: Observable emitting state of `BluetoothManager` as `CBCentralManagerState`.
 	 */
 	@available( *, deprecated, message : "Use rx_state property instead.")
-	public func monitorState() -> Observable<CBCentralManagerState> {
+	public func monitorState() -> Observable<CBPeripheralManagerState> {
 		return Observable.deferred {
 			return self.centralManager.rx_didUpdateState.startWith(self.centralManager.state)
 		}
@@ -230,7 +230,7 @@ public class BluetoothManager {
 	 - returns: Observable emitting state of `BluetoothManager` as `CBCentralManagerState`.
 	 */
 	@available( *, deprecated, message : "Use rx_state property instead.")
-	public func monitorStateChange() -> Observable<CBCentralManagerState> {
+	public func monitorStateChange() -> Observable<CBPeripheralManagerState> {
 		return self.centralManager.rx_didUpdateState
 	}
 
@@ -261,7 +261,7 @@ public class BluetoothManager {
 				.filter { $0.0 == peripheral.peripheral }
 				.take(1)
 				.flatMap { (peripheral, error) -> Observable<Peripheral> in
-					Observable.error(BluetoothError.PeripheralConnectionFailed(
+					Observable.error(BluetoothError.peripheralConnectionFailed(
 						Peripheral(manager: self, peripheral: peripheral), error))
 			}
 
@@ -286,7 +286,7 @@ public class BluetoothManager {
 				}
 			}
 
-			return ensureState(.PoweredOn, observable: observable)
+			return ensureState(.poweredOn, observable: observable)
 	}
 
 	/**
@@ -305,7 +305,7 @@ public class BluetoothManager {
 				disposable.dispose()
 			}
 		}
-		return ensureState(.PoweredOn, observable: observable)
+		return ensureState(.poweredOn, observable: observable)
 	}
 
 	// MARK: Retrieving Lists of Peripherals
@@ -327,7 +327,7 @@ public class BluetoothManager {
 				}
 			}
 		}
-		return ensureState(.PoweredOn, observable: observable)
+		return ensureState(.poweredOn, observable: observable)
 	}
 
 	/**
@@ -336,7 +336,7 @@ public class BluetoothManager {
 	 - parameter identifiers: List of `Peripheral`'s identifiers which should be retrieved.
 	 - returns: Observable which emits next and complete events when list of `Peripheral`s are retrieved.
 	 */
-	public func retrievePeripheralsWithIdentifiers(_ identifiers: [NSUUID]) -> Observable<[Peripheral]> {
+	public func retrievePeripheralsWithIdentifiers(_ identifiers: [UUID]) -> Observable<[Peripheral]> {
 		let observable = Observable<[Peripheral]>.deferred {
 			return self.centralManager.retrievePeripheralsWithIdentifiers(identifiers).map {
 				(peripheralTable: [RxPeripheralType]) ->
@@ -345,7 +345,7 @@ public class BluetoothManager {
 				}
 			}
 		}
-		return ensureState(.PoweredOn, observable: observable)
+		return ensureState(.poweredOn, observable: observable)
 	}
 
 	// MARK:  Internal functions
@@ -358,7 +358,7 @@ public class BluetoothManager {
 	 - parameter observable: Observable into which potential errors should be merged.
 	 - returns: New observable which merges errors with source observable.
 	 */
-	func ensureState<T>(_ state: CBCentralManagerState, observable: Observable<T>) -> Observable<T> {
+	func ensureState<T>(_ state: CBPeripheralManagerState, observable: Observable<T>) -> Observable<T> {
 		let statesObservable = rx_state
 			.filter { $0 != state && BluetoothError.errorFromState($0) != nil }
 			.map { state -> T in throw BluetoothError.errorFromState(state)! }
@@ -374,12 +374,12 @@ public class BluetoothManager {
 	func ensurePeripheralIsConnected<T>(_ peripheral: Peripheral) -> Observable<T> {
 		return Observable.deferred {
 			if !peripheral.isConnected {
-				return Observable.error(BluetoothError.PeripheralDisconnected(peripheral, nil))
+				return Observable.error(BluetoothError.peripheralDisconnected(peripheral, nil))
 			}
 			return self.centralManager.rx_didDisconnectPeripheral
 				.filter { $0.0 == peripheral.peripheral }
 				.flatMap { (_, error) -> Observable<T> in
-					return Observable.error(BluetoothError.PeripheralDisconnected(peripheral, error))
+					return Observable.error(BluetoothError.peripheralDisconnected(peripheral, error))
 			}
 		}
 	}

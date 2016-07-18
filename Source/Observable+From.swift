@@ -32,13 +32,13 @@ class ArrayObserverProxy<Element>: ObserverType {
 
     func on(_ event: Event<[Element]>) {
         switch event {
-        case .Next(let elements):
+        case .next(let elements):
             for e in elements {
                 toObserver.onNext(e)
             }
-        case .Error(let error):
+        case .error(let error):
             toObserver.onError(error)
-        case .Completed:
+        case .completed:
             toObserver.onCompleted()
         }
     }

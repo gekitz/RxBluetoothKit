@@ -60,7 +60,7 @@ class RxCBPeripheral: RxPeripheralType {
 			.flatMap {
 				state -> Observable<CBPeripheralState> in
 				guard let state = state else {
-					return Observable.error(BluetoothError.BluetoothInUnknownState)
+					return Observable.error(BluetoothError.bluetoothInUnknownState)
 				}
 				return Observable.just(state)
 		}
@@ -270,7 +270,7 @@ class RxCBPeripheral: RxPeripheralType {
 		}
 
 		@objc func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: NSError?) {
-			peripheralDidReadRSSISubject.onNext((RSSI.integerValue, error))
+			peripheralDidReadRSSISubject.onNext((RSSI.intValue, error))
 		}
 
 		@objc func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
