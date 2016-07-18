@@ -125,7 +125,7 @@ class BluetoothManagerScanningSpec: QuickSpec {
             }
 
             context("when bluetooth manager is powered on and there are 3 devices to be scanned") {
-                func expectMatchPeripherals(fromRecords: [Recorded<Event<ScannedPeripheral>>],
+                func expectMatchPeripherals(_ fromRecords: [Recorded<Event<ScannedPeripheral>>],
                                             withRSSIs: [Double],
                                             inFile: String = #file,
                                             inLine: UInt = #line) {

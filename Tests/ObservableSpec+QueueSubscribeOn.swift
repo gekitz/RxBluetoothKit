@@ -31,7 +31,7 @@ import RxSwift
 
 class ObservableQueueSubscribeOnSpec: QuickSpec {
     
-    func createRecords<T>(records: (Int, Event<T>)...) -> [Recorded<Event<T>>]{
+    func createRecords<T>(_ records: (Int, Event<T>)...) -> [Recorded<Event<T>>]{
         var array = [Recorded<Event<T>>]()
         for (time, event) in records {
             array.append(Recorded(time: time, event: event))
@@ -168,7 +168,7 @@ class ObservableQueueSubscribeOnSpec: QuickSpec {
             
             context("when there are four users with queued subscriptions") {
                 var isSubscribed : [Bool]!
-                enum SomeError : ErrorType { case Error }
+                enum SomeError : ErrorType { case error }
                 
                 beforeEach {
                     users = []

@@ -22,15 +22,15 @@
 
 import Foundation
 
-extension SequenceType {
-    func findElement(@noescape match: Generator.Element -> Bool) -> Generator.Element? {
+extension Sequence {
+    func findElement(@noescape _ match: (Iterator.Element) -> Bool) -> Iterator.Element? {
         for elem in self where match(elem) {
             return elem
         }
         return nil
     }
 
-    func all(@noescape match: Generator.Element -> Bool) -> Bool {
+    func all(@noescape _ match: (Iterator.Element) -> Bool) -> Bool {
         for elem in self where !match(elem) {
             return false
         }

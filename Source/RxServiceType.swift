@@ -66,8 +66,8 @@ func == (lhs: [RxServiceType], rhs: [RxServiceType]) -> Bool {
     guard lhs.count == rhs.count else {
         return false
     }
-    var i1 = lhs.generate()
-    var i2 = rhs.generate()
+    var i1 = lhs.makeIterator()
+    var i2 = rhs.makeIterator()
     var isEqual = true
     while let e1 = i1.next(), e2 = i2.next() where isEqual {
         isEqual = e1 == e2

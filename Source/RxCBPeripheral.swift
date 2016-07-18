@@ -44,7 +44,7 @@ class RxCBPeripheral: RxPeripheralType {
 	}
 
 	/// Peripheral's identifier
-	var identifier: NSUUID {
+	var identifier: UUID {
 		return peripheral.identifier
 	}
 
@@ -147,7 +147,7 @@ class RxCBPeripheral: RxPeripheralType {
 
 	 - parameter serviceUUIDs: List of UUIDS which must be implemented by a peripheral
 	 */
-	func discoverServices(serviceUUIDs: [CBUUID]?) {
+	func discoverServices(_ serviceUUIDs: [CBUUID]?) {
 		peripheral.discoverServices(serviceUUIDs)
 	}
 
@@ -159,8 +159,8 @@ class RxCBPeripheral: RxPeripheralType {
 	 - parameter characteristicUUIDs: List of UUIDs of characteristics which should be returned.
 	 - parameter forService: Serivce which includes characteristics
 	 */
-	func discoverCharacteristics(characteristicUUIDs: [CBUUID]?, forService service: RxServiceType) {
-		peripheral.discoverCharacteristics(characteristicUUIDs, forService: (service as! RxCBService).service)
+	func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, forService service: RxServiceType) {
+		peripheral.discoverCharacteristics(characteristicUUIDs, for: (service as! RxCBService).service)
 	}
 
 	/**
@@ -171,8 +171,8 @@ class RxCBPeripheral: RxPeripheralType {
 	 all included services will be discovered
 	 - parameter forService: Service which contains included services.
 	 */
-	func discoverIncludedServices(includedServiceUUIDs: [CBUUID]?, forService service: RxServiceType) {
-		peripheral.discoverIncludedServices(includedServiceUUIDs, forService: (service as! RxCBService).service)
+	func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, forService service: RxServiceType) {
+		peripheral.discoverIncludedServices(includedServiceUUIDs, for: (service as! RxCBService).service)
 	}
 
 	/**
@@ -180,8 +180,8 @@ class RxCBPeripheral: RxPeripheralType {
 	 subscibe.
 	 - parameter characteristic: Characteristic from which we are reading
 	 */
-	func readValueForCharacteristic(characteristic: RxCharacteristicType) {
-		peripheral.readValueForCharacteristic((characteristic as! RxCBCharacteristic).characteristic)
+	func readValueForCharacteristic(_ characteristic: RxCharacteristicType) {
+		peripheral.readValue(for: (characteristic as! RxCBCharacteristic).characteristic)
 	}
 
 	/**
@@ -191,10 +191,10 @@ class RxCBPeripheral: RxPeripheralType {
 	 - parameter forCharacteristic: Characteristic to which new value will be written.
 	 - parameter type: Type of write operation
 	 */
-	func writeValue(data: NSData,
+	func writeValue(_ data: Data,
 		forCharacteristic characteristic: RxCharacteristicType,
 		type: CBCharacteristicWriteType) {
-			peripheral.writeValue(data, forCharacteristic: (characteristic as! RxCBCharacteristic).characteristic,
+			peripheral.writeValue(data, for: (characteristic as! RxCBCharacteristic).characteristic,
 				type: type)
 	}
 
@@ -203,8 +203,8 @@ class RxCBPeripheral: RxPeripheralType {
 	 - parameter enabled: True if notifications for value changes should be enabled
 	 - parameter forCharacteristic: Characteristic for which notifications will be enabled or disabled
 	 */
-	func setNotifyValue(enabled: Bool, forCharacteristic characteristic: RxCharacteristicType) {
-		peripheral.setNotifyValue(enabled, forCharacteristic: (characteristic as! RxCBCharacteristic).characteristic)
+	func setNotifyValue(_ enabled: Bool, forCharacteristic characteristic: RxCharacteristicType) {
+		peripheral.setNotifyValue(enabled, for: (characteristic as! RxCBCharacteristic).characteristic)
 	}
 
 	/**
@@ -213,8 +213,8 @@ class RxCBPeripheral: RxPeripheralType {
 
 	 - parameter characteristic: Characteristic for which descriptors will be discovered
 	 */
-	func discoverDescriptorsForCharacteristic(characteristic: RxCharacteristicType) {
-		peripheral.discoverDescriptorsForCharacteristic((characteristic as! RxCBCharacteristic).characteristic)
+	func discoverDescriptorsForCharacteristic(_ characteristic: RxCharacteristicType) {
+		peripheral.discoverDescriptors(for: (characteristic as! RxCBCharacteristic).characteristic)
 	}
 
 	/**
@@ -223,8 +223,8 @@ class RxCBPeripheral: RxPeripheralType {
 
 	 - parameter descriptor: Descriptor which value will be read.
 	 */
-	func readValueForDescriptor(descriptor: RxDescriptorType) {
-		peripheral.readValueForDescriptor((descriptor as! RxCBDescriptor).descriptor)
+	func readValueForDescriptor(_ descriptor: RxDescriptorType) {
+		peripheral.readValue(for: (descriptor as! RxCBDescriptor).descriptor)
 	}
 
 	/**
@@ -234,8 +234,8 @@ class RxCBPeripheral: RxPeripheralType {
 	 - parameter data: Data to be write to descriptor.
 	 - parameter forDescriptor: Descriptor which value will be written.
 	 */
-	func writeValue(data: NSData, forDescriptor descriptor: RxDescriptorType) {
-		peripheral.writeValue(data, forDescriptor: (descriptor as! RxCBDescriptor).descriptor)
+	func writeValue(_ data: Data, forDescriptor descriptor: RxDescriptorType) {
+		peripheral.writeValue(data, for: (descriptor as! RxCBDescriptor).descriptor)
 	}
 
 	/// Read RSSI from peripheral
@@ -259,74 +259,74 @@ class RxCBPeripheral: RxPeripheralType {
 		let peripheralDidUpdateValueForDescriptorSubject = PublishSubject<(RxDescriptorType, NSError?)>()
 		let peripheralDidWriteValueForDescriptorSubject = PublishSubject<(RxDescriptorType, NSError?)>()
 
-		@objc func peripheralDidUpdateName(peripheral: CBPeripheral) {
+		@objc func peripheralDidUpdateName(_ peripheral: CBPeripheral) {
 			peripheralDidUpdateNameSubject.onNext(peripheral.name)
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
+		@objc func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
 			peripheralDidModifyServicesSubject.onNext(invalidatedServices.map {
 				RxCBService(service: $0)
 			})
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: NSError?) {
+		@objc func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: NSError?) {
 			peripheralDidReadRSSISubject.onNext((RSSI.integerValue, error))
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
+		@objc func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
 			peripheralDidDiscoverServicesSubject.onNext((peripheral.services?.map {
 				RxCBService(service: $0)
 				}, error))
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral,
-			didDiscoverIncludedServicesForService service: CBService,
+		@objc func peripheral(_ peripheral: CBPeripheral,
+			didDiscoverIncludedServicesFor service: CBService,
 			error: NSError?) {
 				peripheralDidDiscoverIncludedServicesForServiceSubject.onNext((RxCBService(service: service), error))
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral,
-			didDiscoverCharacteristicsForService service: CBService,
+		@objc func peripheral(_ peripheral: CBPeripheral,
+			didDiscoverCharacteristicsFor service: CBService,
 			error: NSError?) {
 				peripheralDidDiscoverCharacteristicsForServiceSubject.onNext((RxCBService(service: service), error))
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral,
-			didUpdateValueForCharacteristic characteristic: CBCharacteristic,
+		@objc func peripheral(_ peripheral: CBPeripheral,
+			didUpdateValueFor characteristic: CBCharacteristic,
 			error: NSError?) {
 				peripheralDidUpdateValueForCharacteristicSubject
 					.onNext((RxCBCharacteristic(characteristic: characteristic), error))
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral,
-			didWriteValueForCharacteristic characteristic: CBCharacteristic,
+		@objc func peripheral(_ peripheral: CBPeripheral,
+			didWriteValueFor characteristic: CBCharacteristic,
 			error: NSError?) {
 				peripheralDidWriteValueForCharacteristicSubject
 					.onNext((RxCBCharacteristic(characteristic: characteristic), error))
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral,
-			didUpdateNotificationStateForCharacteristic characteristic: CBCharacteristic,
+		@objc func peripheral(_ peripheral: CBPeripheral,
+			didUpdateNotificationStateFor characteristic: CBCharacteristic,
 			error: NSError?) {
 				peripheralDidUpdateNotificationStateForCharacteristicSubject
 					.onNext((RxCBCharacteristic(characteristic: characteristic), error))
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral,
-			didDiscoverDescriptorsForCharacteristic characteristic: CBCharacteristic,
+		@objc func peripheral(_ peripheral: CBPeripheral,
+			didDiscoverDescriptorsFor characteristic: CBCharacteristic,
 			error: NSError?) {
 				peripheralDidDiscoverDescriptorsForCharacteristicSubject
 					.onNext((RxCBCharacteristic(characteristic: characteristic), error))
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral,
-			didUpdateValueForDescriptor descriptor: CBDescriptor,
+		@objc func peripheral(_ peripheral: CBPeripheral,
+			didUpdateValueFor descriptor: CBDescriptor,
 			error: NSError?) {
 				peripheralDidUpdateValueForDescriptorSubject.onNext((RxCBDescriptor(descriptor: descriptor), error))
 		}
 
-		@objc func peripheral(peripheral: CBPeripheral,
-			didWriteValueForDescriptor descriptor: CBDescriptor,
+		@objc func peripheral(_ peripheral: CBPeripheral,
+			didWriteValueFor descriptor: CBDescriptor,
 			error: NSError?) {
 				peripheralDidWriteValueForDescriptorSubject.onNext((RxCBDescriptor(descriptor: descriptor), error))
 		}
@@ -342,10 +342,10 @@ class RxCBPeripheral: RxPeripheralType {
 		}
 	}
 
-	private static let internalPeripheralDelegateWrappersLock = NSLock()
+	private static let internalPeripheralDelegateWrappersLock = Lock()
 	private static var internalPeripheralDelegateWrappers = [CBPeripheral: InternalPeripheralDelegateWrapper]()
 
-	private static func getInternalPeripheralDelegateRef(cbPeripheral: CBPeripheral) -> InternalPeripheralDelegate {
+	private static func getInternalPeripheralDelegateRef(_ cbPeripheral: CBPeripheral) -> InternalPeripheralDelegate {
 		internalPeripheralDelegateWrappersLock.lock(); defer { internalPeripheralDelegateWrappersLock.unlock() }
 
 		if let wrapper = internalPeripheralDelegateWrappers[cbPeripheral] {
@@ -359,7 +359,7 @@ class RxCBPeripheral: RxPeripheralType {
 		}
 	}
 
-	private static func putInternalPeripheralDelegateRef(cbPeripheral: CBPeripheral) {
+	private static func putInternalPeripheralDelegateRef(_ cbPeripheral: CBPeripheral) {
 		internalPeripheralDelegateWrappersLock.lock(); defer { internalPeripheralDelegateWrappersLock.unlock() }
 
 		if let wrapper = internalPeripheralDelegateWrappers[cbPeripheral] {

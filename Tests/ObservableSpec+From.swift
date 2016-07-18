@@ -33,7 +33,7 @@ import RxSwift
 
 class ObservableFromSpec: QuickSpec {
     
-    func createRecords<T>(records: (Int, Event<T>)...) -> [Recorded<Event<T>>]{
+    func createRecords<T>(_ records: (Int, Event<T>)...) -> [Recorded<Event<T>>]{
         var array = [Recorded<Event<T>>]()
         for (time, event) in records {
             array.append(Recorded(time: time, event: event))
@@ -96,7 +96,7 @@ class ObservableFromSpec: QuickSpec {
             }
             
             context("when there is a stream completed with error") {
-                enum SomeError : ErrorType { case Error }
+                enum SomeError : ErrorType { case error }
                 
                 beforeEach {
                     let ob = testScheduler.createColdObservable(self.createRecords(

@@ -55,7 +55,7 @@ public class BluetoothManager {
 	private let subscriptionQueue: SerializedSubscriptionQueue
 
 	/// Lock which should be used before accessing any internal structures
-	private let lock = NSLock()
+	private let lock = Lock()
 
 	/// Queue of scan operations which are waiting for an execution
 	private var scanQueue: [ScanOperation] = []
@@ -89,7 +89,7 @@ public class BluetoothManager {
      - parameter options: An optional dictionary containing initialization options for a central manager.
      For more info about it please refer to [`Central Manager initialization options`](https://developer.apple.com/library/ios/documentation/CoreBluetooth/Reference/CBCentralManager_Class/index.html)
 	 */
-	convenience public init(queue: dispatch_queue_t = dispatch_get_main_queue(),
+	convenience public init(queue: DispatchQueue = DispatchQueue.main,
 	                        options: [String : AnyObject]? = nil) {
 		self.init(centralManager: RxCBCentralManager(queue: queue),
 			queueScheduler: ConcurrentDispatchQueueScheduler(queue: queue))
@@ -125,7 +125,7 @@ public class BluetoothManager {
 	 - parameter options: Optional scanning options.
 	 - returns: Infinite stream of scanned peripherals.
 	 */
-	public func scanForPeripherals(serviceUUIDs: [CBUUID]?, options: [String: AnyObject]? = nil)
+	public func scanForPeripherals(_ serviceUUIDs: [CBUUID]?, options: [String: AnyObject]? = nil)
 		-> Observable<ScannedPeripheral> {
 
 			return Observable.deferred {
@@ -217,7 +217,7 @@ public class BluetoothManager {
 
 	 - returns: Observable emitting state of `BluetoothManager` as `CBCentralManagerState`.
 	 */
-	@available( *, deprecated, message = "Use rx_state property instead.")
+	@available( *, deprecated, message : "Use rx_state property instead.")
 	public func monitorState() -> Observable<CBCentralManagerState> {
 		return Observable.deferred {
 			return self.centralManager.rx_didUpdateState.startWith(self.centralManager.state)
@@ -229,7 +229,7 @@ public class BluetoothManager {
 
 	 - returns: Observable emitting state of `BluetoothManager` as `CBCentralManagerState`.
 	 */
-	@available( *, deprecated, message = "Use rx_state property instead.")
+	@available( *, deprecated, message : "Use rx_state property instead.")
 	public func monitorStateChange() -> Observable<CBCentralManagerState> {
 		return self.centralManager.rx_didUpdateState
 	}
@@ -249,7 +249,7 @@ public class BluetoothManager {
 	 - parameter options: Dictionary to customise the behaviour of connection.
 	 - returns: Observable which emits next and complete events after connection is established.
 	 */
-	public func connectToPeripheral(peripheral: Peripheral, options: [String: AnyObject]? = nil)
+	public func connectToPeripheral(_ peripheral: Peripheral, options: [String: AnyObject]? = nil)
 		-> Observable<Peripheral> {
 
 			let success = centralManager.rx_didConnectPeripheral
@@ -297,7 +297,7 @@ public class BluetoothManager {
 	 connect or has already connected.
 	 - returns: Observable which emits next and complete events when peripheral successfully cancelled connection.
 	 */
-	public func cancelConnectionToPeripheral(peripheral: Peripheral) -> Observable<Peripheral> {
+	public func cancelConnectionToPeripheral(_ peripheral: Peripheral) -> Observable<Peripheral> {
 		let observable = Observable<Peripheral>.create { observer in
 			let disposable = self.monitorPeripheralDisconnection(peripheral).take(1).subscribe(observer)
 			self.centralManager.cancelPeripheralConnection(peripheral.peripheral)
@@ -318,7 +318,7 @@ public class BluetoothManager {
 	 - returns: Observable which emits retrieved `Peripheral`s. They are in connected state and contain all of the
 	 `Service`s with UUIDs specified in the `serviceUUIDs` parameter. Just after that complete event is emitted
 	 */
-	public func retrieveConnectedPeripheralsWithServices(serviceUUIDs: [CBUUID]) -> Observable<[Peripheral]> {
+	public func retrieveConnectedPeripheralsWithServices(_ serviceUUIDs: [CBUUID]) -> Observable<[Peripheral]> {
 		let observable = Observable<[Peripheral]>.deferred {
 			return self.centralManager.retrieveConnectedPeripheralsWithServices(serviceUUIDs).map {
 				(peripheralTable: [RxPeripheralType]) ->
@@ -336,7 +336,7 @@ public class BluetoothManager {
 	 - parameter identifiers: List of `Peripheral`'s identifiers which should be retrieved.
 	 - returns: Observable which emits next and complete events when list of `Peripheral`s are retrieved.
 	 */
-	public func retrievePeripheralsWithIdentifiers(identifiers: [NSUUID]) -> Observable<[Peripheral]> {
+	public func retrievePeripheralsWithIdentifiers(_ identifiers: [NSUUID]) -> Observable<[Peripheral]> {
 		let observable = Observable<[Peripheral]>.deferred {
 			return self.centralManager.retrievePeripheralsWithIdentifiers(identifiers).map {
 				(peripheralTable: [RxPeripheralType]) ->
@@ -358,7 +358,7 @@ public class BluetoothManager {
 	 - parameter observable: Observable into which potential errors should be merged.
 	 - returns: New observable which merges errors with source observable.
 	 */
-	func ensureState<T>(state: CBCentralManagerState, observable: Observable<T>) -> Observable<T> {
+	func ensureState<T>(_ state: CBCentralManagerState, observable: Observable<T>) -> Observable<T> {
 		let statesObservable = rx_state
 			.filter { $0 != state && BluetoothError.errorFromState($0) != nil }
 			.map { state -> T in throw BluetoothError.errorFromState(state)! }
@@ -371,7 +371,7 @@ public class BluetoothManager {
 	 - parameter peripheral: `Peripheral` which should be connected during subscription.
 	 - returns: Observable which emits error when `peripheral` is disconnected during subscription.
 	 */
-	func ensurePeripheralIsConnected<T>(peripheral: Peripheral) -> Observable<T> {
+	func ensurePeripheralIsConnected<T>(_ peripheral: Peripheral) -> Observable<T> {
 		return Observable.deferred {
 			if !peripheral.isConnected {
 				return Observable.error(BluetoothError.PeripheralDisconnected(peripheral, nil))
@@ -390,7 +390,7 @@ public class BluetoothManager {
 	 - Parameter peripheral: `Peripheral` which is monitored for disconnection.
 	 - Returns: Observable which emits next events when `peripheral` was disconnected.
 	 */
-	public func monitorPeripheralDisconnection(peripheral: Peripheral) -> Observable<Peripheral> {
+	public func monitorPeripheralDisconnection(_ peripheral: Peripheral) -> Observable<Peripheral> {
 		return centralManager
 			.rx_didDisconnectPeripheral
 			.filter { $0.0 == peripheral.peripheral }

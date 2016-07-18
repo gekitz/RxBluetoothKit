@@ -37,7 +37,7 @@ final class Box<T> {
     }
 }
 
-func expectError<ErrorType : Equatable, Element>(event: Event<Element>, errorType: ErrorType, file: String = #file, line: UInt = #line) {
+func expectError<ErrorType : Equatable, Element>(_ event: Event<Element>, errorType: ErrorType, file: String = #file, line: UInt = #line) {
     expect(event.isStopEvent, file: file, line: line).to(beTrue())
     expect(event.error, file: file, line: line).toNot(beNil())
     expect(event.error is ErrorType, file: file, line: line).to(beTrue())
@@ -45,7 +45,7 @@ func expectError<ErrorType : Equatable, Element>(event: Event<Element>, errorTyp
 }
 
 extension TestScheduler {
-    func scheduleObservable<Element>(time: ObservableScheduleTimes = ObservableScheduleTimes(), create: () -> Observable<Element>) -> ScheduledObservable<Element> {
+    func scheduleObservable<Element>(_ time: ObservableScheduleTimes = ObservableScheduleTimes(), create: () -> Observable<Element>) -> ScheduledObservable<Element> {
         var source : Observable<Element>? = nil
         var subscription : Disposable? = nil
         let observer = createObserver(Element)

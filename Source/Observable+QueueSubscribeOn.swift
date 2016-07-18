@@ -26,7 +26,7 @@ import RxSwift
 /// Queue which is used for queueing subscriptions for queueSubscribeOn operator.
 class SerializedSubscriptionQueue {
     let scheduler: ImmediateSchedulerType
-    let lock = NSLock()
+    let lock = Lock()
 
     // First element on queue is curently subscribed and not completed
     // observable. All others are queued for subscription when the first
@@ -45,7 +45,7 @@ class SerializedSubscriptionQueue {
     // Queue subscription for a queue. If observable is inserted
     // into empty queue it's subscribed immediately. Otherwise
     // it waits for completion from other observables.
-    func queueSubscription(observable: DelayedObservableType) {
+    func queueSubscription(_ observable: DelayedObservableType) {
         lock.lock(); defer { lock.unlock() }
         let execute = queue.isEmpty
         queue.append(observable)
@@ -55,13 +55,13 @@ class SerializedSubscriptionQueue {
         }
     }
 
-    func unsubscribe(observable: DelayedObservableType) {
+    func unsubscribe(_ observable: DelayedObservableType) {
         lock.lock(); defer { lock.unlock() }
 
         // Find index of observable which should be unsubscribed
         // and remove it from queue
-        if let index = queue.indexOf({ $0 === observable }) {
-            queue.removeAtIndex(index)
+        if let index = queue.index(where: { $0 === observable }) {
+            queue.remove(at: index)
             // If first item was unsubscribed, subscribe on next one
             // if available
             if index == 0 {
@@ -72,7 +72,7 @@ class SerializedSubscriptionQueue {
 }
 
 protocol DelayedObservableType: class {
-    func delayedSubscribe(scheduler: ImmediateSchedulerType)
+    func delayedSubscribe(_ scheduler: ImmediateSchedulerType)
 }
 
 class QueueSubscribeOn<Element>: Cancelable, ObservableType, ObserverType, DelayedObservableType {
@@ -96,7 +96,7 @@ class QueueSubscribeOn<Element>: Cancelable, ObservableType, ObserverType, Delay
     // All event needs to be passed to original observer
     // if subscription was not disposed. If stream is completed
     // cleanup should occur.
-    func on(event: Event<Element>) {
+    func on(_ event: Event<Element>) {
         guard !disposed else { return }
         observer?.on(event)
         if event.isStopEvent {
@@ -106,7 +106,7 @@ class QueueSubscribeOn<Element>: Cancelable, ObservableType, ObserverType, Delay
 
     // Part of producer implementation. We need to make sure that we can optimize
     // scheduling of a work (taken from RxSwift source code)
-    func subscribe<O: ObserverType where O.E == Element>(observer: O) -> Disposable {
+    func subscribe<O: ObserverType where O.E == Element>(_ observer: O) -> Disposable {
         if !CurrentThreadScheduler.isScheduleRequired {
             return run(observer)
         } else {
@@ -117,14 +117,14 @@ class QueueSubscribeOn<Element>: Cancelable, ObservableType, ObserverType, Delay
     }
 
     // After original subscription we need to place it on queue for delayed execution if required.
-    func run<O: ObserverType where O.E == Element>(observer: O) -> Disposable {
+    func run<O: ObserverType where O.E == Element>(_ observer: O) -> Disposable {
         self.observer = observer.asObserver()
         queue.queueSubscription(self)
         return self
     }
 
     // Delayed subscription must be called after original subscription so that observer will be stored by that time.
-    func delayedSubscribe(scheduler: ImmediateSchedulerType) {
+    func delayedSubscribe(_ scheduler: ImmediateSchedulerType) {
         let cancelDisposable = SingleAssignmentDisposable()
         serialDisposable.disposable = cancelDisposable
         cancelDisposable.disposable = scheduler.schedule(()) {
@@ -159,7 +159,7 @@ extension ObservableType {
      - returns: The source which will be subscribe when queue is empty or previous observable was completed or disposed.
      */
     @warn_unused_result(message="http://git.io/rxs.uo")
-    func queueSubscribeOn(queue: SerializedSubscriptionQueue) -> Observable<E> {
+    func queueSubscribeOn(_ queue: SerializedSubscriptionQueue) -> Observable<E> {
         return QueueSubscribeOn(source: self.asObservable(), queue: queue).asObservable()
     }
     // swiftlint:enable missing_docs

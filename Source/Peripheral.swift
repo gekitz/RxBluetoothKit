@@ -46,7 +46,7 @@ public class Peripheral {
 	 Value indicating if peripheral is currently in connected state.
 	 */
 	public var isConnected: Bool {
-		return peripheral.state == .Connected
+		return peripheral.state == .connected
 	}
 
 	/**
@@ -78,8 +78,8 @@ public class Peripheral {
 	/**
 	 Unique identifier of `Peripheral` instance. Assigned once peripheral is discovered by the system.
 	 */
-	public var identifier: NSUUID {
-		return peripheral.identifier
+	public var identifier: UUID {
+		return peripheral.identifier as UUID
 	}
 
 	/**
@@ -105,7 +105,7 @@ public class Peripheral {
 	 - Parameter options: Dictionary to customise the behaviour of connection.
 	 - Returns: Observation which emits next event after connection is established
 	 */
-	public func connect(options: [String: AnyObject]? = nil) -> Observable<Peripheral> {
+	public func connect(_ options: [String: AnyObject]? = nil) -> Observable<Peripheral> {
 		return manager.connectToPeripheral(self, options: options)
 	}
 
@@ -129,7 +129,7 @@ public class Peripheral {
 	 - Returns: Observable that emits `Next` with array of `Service` instances, once they're discovered.
 	 Immediately after that `.Complete` is emitted.
 	 */
-	public func discoverServices(serviceUUIDs: [CBUUID]?) -> Observable<[Service]> {
+	public func discoverServices(_ serviceUUIDs: [CBUUID]?) -> Observable<[Service]> {
 		if let identifiers = serviceUUIDs, let services = self.services?.filter({ identifiers.contains($0.UUID) })
 		   where identifiers.count == services.count {
 			return ensureValidPeripheralState(Observable.just(services))
@@ -172,7 +172,7 @@ public class Peripheral {
 	 - Returns: Observable that emits `Next` with array of `Service` instances, once they're discovered.
 	 Immediately after that `.Complete` is emitted.
 	 */
-	public func discoverIncludedServices(includedServiceUUIDs: [CBUUID]?, forService service: Service) -> Observable<[Service]> {
+	public func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, forService service: Service) -> Observable<[Service]> {
 		if let identifiers = includedServiceUUIDs, let services = service.includedServices?.filter({ identifiers.contains($0.UUID) })
 		   where identifiers.count == services.count {
 			return ensureValidPeripheralState(Observable.just(services))
@@ -213,7 +213,7 @@ public class Peripheral {
 	 - Parameter service: Service of which characteristics should be discovered.
 	 Immediately after that `.Complete` is emitted.
 	 */
-	public func discoverCharacteristics(identifiers: [CBUUID]?, service: Service) -> Observable<[Characteristic]> {
+	public func discoverCharacteristics(_ identifiers: [CBUUID]?, service: Service) -> Observable<[Characteristic]> {
 		if let identifiers = identifiers, let characteristics = service.characteristics?.filter({ identifiers.contains($0.UUID) })
 		   where identifiers.count == characteristics.count {
 			return ensureValidPeripheralState(Observable.just(characteristics))
@@ -248,7 +248,7 @@ public class Peripheral {
 	 - Returns: Observable that emits `Next` with `Characteristic` instance every time when write has happened.
 	 It's **infinite** stream, so `.Complete` is never called.
 	 */
-	public func monitorWriteForCharacteristic(characteristic: Characteristic) -> Observable<Characteristic> {
+	public func monitorWriteForCharacteristic(_ characteristic: Characteristic) -> Observable<Characteristic> {
 		return peripheral
 			.rx_didWriteValueForCharacteristic
 			.filter { return $0.0 == characteristic.characteristic }
@@ -275,7 +275,7 @@ public class Peripheral {
 	 Immediately after that `.Complete` is called. Result of this call is not checked, so as a user you are not sure
 	 if everything completed successfully. Errors are not emitted
 	 */
-	public func writeValue(data: NSData,
+	public func writeValue(_ data: NSData,
 		forCharacteristic characteristic: Characteristic,
 		type: CBCharacteristicWriteType) -> Observable<Characteristic> {
 			return Observable.create { observer in
@@ -301,7 +301,7 @@ public class Peripheral {
 	 - Returns: Observable that emits `Next` with `Characteristic` instance every time when value has changed.
 	 It's **infinite** stream, so `.Complete` is never called.
 	 */
-	public func monitorValueUpdateForCharacteristic(characteristic: Characteristic) -> Observable<Characteristic> {
+	public func monitorValueUpdateForCharacteristic(_ characteristic: Characteristic) -> Observable<Characteristic> {
 		let observable = peripheral
 			.rx_didUpdateValueForCharacteristic
 			.filter { $0.0 == characteristic.characteristic }
@@ -321,7 +321,7 @@ public class Peripheral {
 	 - Returns: Observable which emits `Next` with given characteristic when value is ready to read. Immediately after that
 	 `.Complete` is emitted.
 	 */
-	public func readValueForCharacteristic(characteristic: Characteristic) -> Observable<Characteristic> {
+	public func readValueForCharacteristic(_ characteristic: Characteristic) -> Observable<Characteristic> {
 		return Observable.create { observer in
 			let disposable = self.monitorValueUpdateForCharacteristic(characteristic).take(1).subscribe(observer)
 			self.peripheral.readValueForCharacteristic(characteristic.characteristic)
@@ -341,7 +341,7 @@ public class Peripheral {
 	 - returns: Observable which emits `Next` with Characteristic that state was changed. Immediately after `.Complete`
 	 is emitted
 	 */
-	public func setNotifyValue(enabled: Bool,
+	public func setNotifyValue(_ enabled: Bool,
 		forCharacteristic characteristic: Characteristic) -> Observable<Characteristic> {
 			let observable = peripheral
 				.rx_didUpdateNotificationStateForCharacteristic
@@ -369,7 +369,7 @@ public class Peripheral {
 	 - returns: Observable which emits `Next`, when characteristic value is updated.
 	 This is **infinite** stream of values.
 	 */
-	public func setNotificationAndMonitorUpdatesForCharacteristic(characteristic: Characteristic)
+	public func setNotificationAndMonitorUpdatesForCharacteristic(_ characteristic: Characteristic)
 		-> Observable<Characteristic> {
 			return Observable
 				.of(
@@ -387,7 +387,7 @@ public class Peripheral {
 	 - Returns: Observable that emits `Next` with array of `Descriptor` instances, once they're discovered.
 	 Immediately after that `.Complete` is emitted.
 	 */
-	public func discoverDescriptorsForCharacteristic(characteristic: Characteristic) -> Observable<[Descriptor]> {
+	public func discoverDescriptorsForCharacteristic(_ characteristic: Characteristic) -> Observable<[Descriptor]> {
 		let observable = peripheral
 			.rx_didDiscoverDescriptorsForCharacteristic
 			.filter { $0.0 == characteristic.characteristic }
@@ -415,7 +415,7 @@ public class Peripheral {
 	 - Returns: Observable that emits `Next` with `Descriptor` instance every time when write has happened.
 	 It's **infinite** stream, so `.Complete` is never called.
 	 */
-	public func monitorWriteForDescriptor(descriptor: Descriptor) -> Observable<Descriptor> {
+	public func monitorWriteForDescriptor(_ descriptor: Descriptor) -> Observable<Descriptor> {
 		return peripheral
 			.rx_didWriteValueForDescriptor
 			.filter { $0.0 == descriptor.descriptor }
@@ -434,7 +434,7 @@ public class Peripheral {
 	 - Returns: Observable that emits `Next` with `Descriptor` instance, once value is written successfully.
 	 Immediately after that `.Complete` is emitted.
 	 */
-	public func writeValue(data: NSData, forDescriptor descriptor: Descriptor) -> Observable<Descriptor> {
+	public func writeValue(_ data: NSData, forDescriptor descriptor: Descriptor) -> Observable<Descriptor> {
 		return Observable.create { observer in
 			let disposable = self.ensureValidPeripheralState(self.monitorWriteForDescriptor(descriptor).take(1))
 				.subscribe(observer)
@@ -451,7 +451,7 @@ public class Peripheral {
 	 - Returns: Observable that emits `Next` with `Descriptor` instance every time when value has changed.
 	 It's **infinite** stream, so `.Complete` is never called.
 	 */
-	public func monitorValueUpdateForDescriptor(descriptor: Descriptor) -> Observable<Descriptor> {
+	public func monitorValueUpdateForDescriptor(_ descriptor: Descriptor) -> Observable<Descriptor> {
 		let observable = peripheral.rx_didUpdateValueForDescriptor
 			.filter { $0.0 == descriptor.descriptor }
 			.flatMap { (rxDescriptor, error) -> Observable<Descriptor> in
@@ -470,7 +470,7 @@ public class Peripheral {
 	 - Returns: Observable which emits `Next` with given descriptor when value is ready to read. Immediately after that
 	 `.Complete` is emitted.
 	 */
-	public func readValueForDescriptor(descriptor: Descriptor) -> Observable<Descriptor> {
+	public func readValueForDescriptor(_ descriptor: Descriptor) -> Observable<Descriptor> {
 		return Observable.create { observer in
 			let disposable = self.monitorValueUpdateForDescriptor(descriptor).take(1).subscribe(observer)
 			self.peripheral.readValueForDescriptor(descriptor.descriptor)
@@ -485,7 +485,7 @@ public class Peripheral {
 	 - parameter observable: observation to be transformed
 	 - returns: Source observable which listens on state chnage errors as well
 	 */
-	func ensureValidPeripheralState<T>(observable: Observable<T>) -> Observable<T> {
+	func ensureValidPeripheralState<T>(_ observable: Observable<T>) -> Observable<T> {
 		return Observable.deferred {
 			guard self.isConnected else {
 				return Observable.error(BluetoothError.PeripheralDisconnected(self, nil))

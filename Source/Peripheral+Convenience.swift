@@ -35,7 +35,7 @@ extension Peripheral {
      - Returns: Observation which emits `Next` event, when specified service has been found.
      Immediately after that `.Complete` is emitted.
      */
-    public func serviceWithIdentifier(identifier: ServiceIdentifier) -> Observable<Service> {
+    public func serviceWithIdentifier(_ identifier: ServiceIdentifier) -> Observable<Service> {
         return Observable.deferred {
             if let services = self.services,
                 let service = services.findElement({ $0.UUID == identifier.UUID  }) {
@@ -54,7 +54,7 @@ extension Peripheral {
      - Returns: Observation which emits `Next` event, when specified characteristic has been found.
      Immediately after that `.Complete` is emitted.
      */
-    public func characteristicWithIdentifier(identifier: CharacteristicIdentifier) -> Observable<Characteristic> {
+    public func characteristicWithIdentifier(_ identifier: CharacteristicIdentifier) -> Observable<Characteristic> {
         return Observable.deferred {
             return self.serviceWithIdentifier(identifier.service)
                 .flatMap { service -> Observable<Characteristic> in
@@ -77,7 +77,7 @@ extension Peripheral {
      - Returns: Observation which emits `Next` event, when specified descriptor has been found.
      Immediately after that `.Complete` is emitted.
      */
-    public func descriptorWithIdentifier(identifier: DescriptorIdentifier) -> Observable<Descriptor> {
+    public func descriptorWithIdentifier(_ identifier: DescriptorIdentifier) -> Observable<Descriptor> {
         return Observable.deferred {
             return self.characteristicWithIdentifier(identifier.characteristic)
                 .flatMap { characteristic -> Observable<Descriptor> in
@@ -99,7 +99,7 @@ extension Peripheral {
      - Returns: Observable that emits `Next` with `Characteristic` instance every time when write has happened.
      It's **infinite** stream, so `.Complete` is never called.
      */
-    public func monitorWriteForCharacteristicWithIdentifier(identifier: CharacteristicIdentifier)
+    public func monitorWriteForCharacteristicWithIdentifier(_ identifier: CharacteristicIdentifier)
         -> Observable<Characteristic> {
         return characteristicWithIdentifier(identifier)
             .flatMap {
@@ -123,7 +123,7 @@ extension Peripheral {
      Immediately after that `.Complete` is called. Result of this call is not checked, so as a user you are not sure
      if everything completed successfully. Errors are not emitted
      */
-    public func writeValue(data: NSData, forCharacteristicWithIdentifier identifier: CharacteristicIdentifier,
+    public func writeValue(_ data: NSData, forCharacteristicWithIdentifier identifier: CharacteristicIdentifier,
                     type: CBCharacteristicWriteType) -> Observable<Characteristic> {
         return characteristicWithIdentifier(identifier)
             .flatMap {
@@ -137,7 +137,7 @@ extension Peripheral {
      - Returns: Observable that emits `Next` with `Characteristic` instance every time when value has changed.
      It's **infinite** stream, so `.Complete` is never called.
      */
-    public func monitorValueUpdateForCharacteristicWithIdentifier(identifier: CharacteristicIdentifier)
+    public func monitorValueUpdateForCharacteristicWithIdentifier(_ identifier: CharacteristicIdentifier)
         -> Observable<Characteristic> {
         return characteristicWithIdentifier(identifier)
             .flatMap {
@@ -152,7 +152,7 @@ extension Peripheral {
      - Returns: Observable which emits `Next` with given characteristic when value is ready to read. Immediately after that
      `.Complete` is emitted.
      */
-    public func readValueForCharacteristicWithIdentifier(identifier: CharacteristicIdentifier) -> Observable<Characteristic> {
+    public func readValueForCharacteristicWithIdentifier(_ identifier: CharacteristicIdentifier) -> Observable<Characteristic> {
         return characteristicWithIdentifier(identifier)
             .flatMap {
                 return self.readValueForCharacteristic($0)
@@ -169,7 +169,7 @@ extension Peripheral {
      - returns: Observable which emits `Next` with Characteristic that state was changed. Immediately after `.Complete`
      is emitted
      */
-    public func setNotifyValue(enabled: Bool, forCharacteristicWithIdentifier identifier: CharacteristicIdentifier)
+    public func setNotifyValue(_ enabled: Bool, forCharacteristicWithIdentifier identifier: CharacteristicIdentifier)
         -> Observable<Characteristic> {
             return characteristicWithIdentifier(identifier)
                 .flatMap {
@@ -184,7 +184,7 @@ extension Peripheral {
      - returns: Observable which emits `Next`, when characteristic value is updated.
      This is **infinite** stream of values.
      */
-    public func setNotificationAndMonitorUpdatesForCharacteristicWithIdentifier(identifier: CharacteristicIdentifier)
+    public func setNotificationAndMonitorUpdatesForCharacteristicWithIdentifier(_ identifier: CharacteristicIdentifier)
         -> Observable<Characteristic> {
             return characteristicWithIdentifier(identifier)
                 .flatMap {
@@ -199,7 +199,7 @@ extension Peripheral {
      - Returns: Observable that emits `Next` with array of `Descriptor` instances, once they're discovered.
      Immediately after that `.Complete` is emitted.
      */
-    public func discoverDescriptorsForCharacteristicWithIdentifier(identifier: CharacteristicIdentifier) ->
+    public func discoverDescriptorsForCharacteristicWithIdentifier(_ identifier: CharacteristicIdentifier) ->
         Observable<[Descriptor]> {
         return characteristicWithIdentifier(identifier)
             .flatMap {
@@ -213,7 +213,7 @@ extension Peripheral {
      - Returns: Observable that emits `Next` with `Descriptor` instance every time when write has happened.
      It's **infinite** stream, so `.Complete` is never called.
      */
-    public func monitorWriteForDescriptorWithIdentifier(identifier: DescriptorIdentifier) -> Observable<Descriptor> {
+    public func monitorWriteForDescriptorWithIdentifier(_ identifier: DescriptorIdentifier) -> Observable<Descriptor> {
         return descriptorWithIdentifier(identifier)
             .flatMap {
                 return self.monitorWriteForDescriptor($0)
@@ -227,7 +227,7 @@ extension Peripheral {
      - Returns: Observable that emits `Next` with `Descriptor` instance, once value is written successfully.
      Immediately after that `.Complete` is emitted.
      */
-    public func writeValue(data: NSData, forDescriptorWithIdentifier identifier: DescriptorIdentifier)
+    public func writeValue(_ data: NSData, forDescriptorWithIdentifier identifier: DescriptorIdentifier)
         -> Observable<Descriptor> {
         return descriptorWithIdentifier(identifier)
             .flatMap {
@@ -241,7 +241,7 @@ extension Peripheral {
      - Returns: Observable that emits `Next` with `Descriptor` instance every time when value has changed.
      It's **infinite** stream, so `.Complete` is never called.
      */
-    public func monitorValueUpdateForDescriptorWithIdentifier(identifier: DescriptorIdentifier) -> Observable<Descriptor> {
+    public func monitorValueUpdateForDescriptorWithIdentifier(_ identifier: DescriptorIdentifier) -> Observable<Descriptor> {
         return descriptorWithIdentifier(identifier)
             .flatMap {
                 return self.monitorValueUpdateForDescriptor($0)
@@ -255,7 +255,7 @@ extension Peripheral {
      - Returns: Observable which emits `Next` with given descriptor when value is ready to read. Immediately after that
      `.Complete` is emitted.
      */
-    public func readValueForDescriptorWithIdentifier(identifier: DescriptorIdentifier) -> Observable<Descriptor> {
+    public func readValueForDescriptorWithIdentifier(_ identifier: DescriptorIdentifier) -> Observable<Descriptor> {
         return descriptorWithIdentifier(identifier)
             .flatMap {
                 return self.readValueForDescriptor($0)

@@ -33,9 +33,9 @@ class RxCBCharacteristic: RxCharacteristicType {
     }
 
     var uuid: CBUUID {
-        return characteristic.UUID
+        return characteristic.uuid
     }
-    var value: NSData? {
+    var value: Data? {
         return characteristic.value
     }
     var isNotifying: Bool {

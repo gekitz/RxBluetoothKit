@@ -30,7 +30,7 @@ class ArrayObserverProxy<Element>: ObserverType {
         self.toObserver = toObserver
     }
 
-    func on(event: Event<[Element]>) {
+    func on(_ event: Event<[Element]>) {
         switch event {
         case .Next(let elements):
             for e in elements {
@@ -52,7 +52,7 @@ class FromArrayObservable<Element>: ObservableType {
         self.source = source
     }
 
-    func subscribe<O: ObserverType where O.E == E>(observer: O) -> Disposable {
+    func subscribe<O: ObserverType where O.E == E>(_ observer: O) -> Disposable {
         let proxy = ArrayObserverProxy(toObserver: observer.asObserver())
         return source.subscribe(proxy)
     }
@@ -67,7 +67,7 @@ extension ObservableType {
     - returns: New observable which emits elements from array individually from source observable.
     */
     @warn_unused_result(message="http://git.io/rxs.uo")
-    public static func from(arrayObservable: Observable<[E]>) -> Observable<E> {
+    public static func from(_ arrayObservable: Observable<[E]>) -> Observable<E> {
         return FromArrayObservable(source: arrayObservable).asObservable()
     }
     // swiftlint:enable missing_docs

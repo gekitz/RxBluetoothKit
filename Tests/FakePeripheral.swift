@@ -31,10 +31,10 @@ class FakePeripheral: RxPeripheralType {
 
 
     var name: String? = nil
-    var state: CBPeripheralState = CBPeripheralState.Connected
+    var state: CBPeripheralState = CBPeripheralState.connected
     var rx_state: Observable<CBPeripheralState> = .never()
     var services: [RxServiceType]? = nil
-    var identifier: NSUUID = NSUUID()
+    var identifier: UUID = UUID()
 
     var RSSI: Int? = nil
 
@@ -54,46 +54,46 @@ class FakePeripheral: RxPeripheralType {
 
 
     var discoverServicesTO: TestableObserver<[CBUUID]?>?
-    func discoverServices(serviceUUIDs: [CBUUID]?) {
+    func discoverServices(_ serviceUUIDs: [CBUUID]?) {
         discoverServicesTO?.onNext(serviceUUIDs)
     }
 
     var discoverCharacteristicsTO: TestableObserver<([CBUUID]?, RxServiceType)>?
-    func discoverCharacteristics(characteristicUUIDs: [CBUUID]?, forService: RxServiceType) {
+    func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, forService: RxServiceType) {
         discoverCharacteristicsTO?.onNext((characteristicUUIDs, forService))
     }
 
     var discoverIncludedServicesTO: TestableObserver<([CBUUID]?, RxServiceType)>?
-    func discoverIncludedServices(includedServiceUUIDs: [CBUUID]?, forService service: RxServiceType) {
+    func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, forService service: RxServiceType) {
         discoverIncludedServicesTO?.onNext((includedServiceUUIDs, service))
     }
 
     var readValueForCharacteristicTO: TestableObserver<RxCharacteristicType>?
-    func readValueForCharacteristic(characteristic: RxCharacteristicType) {
+    func readValueForCharacteristic(_ characteristic: RxCharacteristicType) {
         readValueForCharacteristicTO?.onNext(characteristic)
     }
 
     var writeValueForCharacteristicTypeTO: TestableObserver<(NSData, RxCharacteristicType, CBCharacteristicWriteType)>?
-    func writeValue(data: NSData, forCharacteristic characteristic: RxCharacteristicType, type: CBCharacteristicWriteType) {
+    func writeValue(_ data: Data, forCharacteristic characteristic: RxCharacteristicType, type: CBCharacteristicWriteType) {
         writeValueForCharacteristicTypeTO?.onNext((data, characteristic, type))
     }
 
     var setNotifyValueForCharacteristicTO: TestableObserver<(Bool, RxCharacteristicType)>?
-    func setNotifyValue(enabled: Bool, forCharacteristic characteristic: RxCharacteristicType) {
+    func setNotifyValue(_ enabled: Bool, forCharacteristic characteristic: RxCharacteristicType) {
         setNotifyValueForCharacteristicTO?.onNext((enabled, characteristic))
     }
 
     var discoverDescriptorsForCharacteristicTO: TestableObserver<RxCharacteristicType>?
-    func discoverDescriptorsForCharacteristic(characteristic: RxCharacteristicType) {
+    func discoverDescriptorsForCharacteristic(_ characteristic: RxCharacteristicType) {
         discoverDescriptorsForCharacteristicTO?.onNext(characteristic)
     }
 
     var readValueForDescriptorTO: TestableObserver<RxDescriptorType>?
-    func readValueForDescriptor(descriptor: RxDescriptorType) {
+    func readValueForDescriptor(_ descriptor: RxDescriptorType) {
         readValueForDescriptorTO?.onNext(descriptor)
     }
     var writeValueForDescriptorTO: TestableObserver<(NSData, RxDescriptorType)>?
-    func writeValue(data: NSData, forDescriptor descriptor: RxDescriptorType) {
+    func writeValue(_ data: Data, forDescriptor descriptor: RxDescriptorType) {
         writeValueForDescriptorTO?.onNext((data, descriptor))
     }
     var readRSSITO: TestableObserver<Void>?
